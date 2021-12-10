@@ -9,13 +9,14 @@ type Car struct {
 	age  int32
 	F1   int8
 	F2   int64
+	F3   *int32
 	InnerStruct struct{
 		InnerByte byte
 		//InnerStr string
 	}
-	F3   []byte
+	F4   []byte
 	Name string
-	F4   error
+	F5   error
 }
 
 func main(){
