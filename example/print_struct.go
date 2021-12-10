@@ -9,6 +9,10 @@ type Car struct {
 	age  int32
 	F1   int8
 	F2   int64
+	InnerStruct struct{
+		InnerByte byte
+		//InnerStr string
+	}
 	F3   []byte
 	Name string
 	F4   error
