@@ -69,18 +69,16 @@ func PrintStructAlignment(q interface{}) {
 		}
 
 		// print
-		// 1.
-		fmt.Println("---- Fields in struct ----")
+		// 1. Fields in struct
 		PrintStructInfo(fieldInfoList)
-
-		// 2.
-		fmt.Println("---- Memory layout ----")
+		// 2. Memory layout
 		ColorFormatPrint(buff)
 	}
 
 }
 
 func PrintStructInfo(itemList []FieldInfo){
+	fmt.Println("---- Fields in struct ----")
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
 
@@ -94,6 +92,7 @@ func PrintStructInfo(itemList []FieldInfo){
 }
 
 func ColorFormatPrint(buff []byte) {
+	fmt.Println("---- Memory layout ----")
 	for i := 0; i < len(buff); i++ {
 		if buff[i] >= 'A' && buff[i] <= 'Z' {
 			idx := int(buff[i]-'A') % len(colorList)
@@ -105,4 +104,5 @@ func ColorFormatPrint(buff []byte) {
 			fmt.Println("|")
 		}
 	}
+	fmt.Printf("\ntotal cost: %v Bytes.\n", len(buff)/2)
 }
