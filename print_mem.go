@@ -17,6 +17,10 @@ type FieldInfo struct {
 }
 
 type ColorFunc func(format string, a ...interface{}) string
+type MemCell struct {
+	Marker     byte
+	FieldIndex int
+}
 
 var (
 	colorList []ColorFunc
@@ -37,14 +41,14 @@ func init() {
 
 
 func PrintStructAlignment(q interface{}) {
-	buff := make([]byte, 0)
+	buff := make([]MemCell, 0)
 	if reflect.ValueOf(q).Kind() == reflect.Struct {
 		typeInfo := reflect.TypeOf(q)
 		fieldInfoList := make([]FieldInfo, typeInfo.NumField())
 
 
 		for i := 0; i < typeInfo.NumField(); i++ {
-			fieldInfoList[i].StrID = string(byte(i)+'A')
+			fieldInfoList[i].StrID = string(fieldMarker(i))
 			fieldInfoList[i].FieldType = typeInfo.Field(i).Type
 			fieldInfoList[i].FieldName = typeInfo.Field(i).Name
 		}
@@ -55,17 +59,17 @@ func PrintStructAlignment(q interface{}) {
 			fieldInfoList[i].FieldSize = size
 
 			// padding
-			paddSize := int(field.Offset) - len(buff)/2
+			paddSize := int(field.Offset) - len(buff)
 			//fmt.Println(i, ":", field.Offset, len(buff)/2)
 			for j := 0; j < paddSize; j++ {
-				buff = append(buff, '|', ' ')
+				buff = append(buff, MemCell{Marker: ' ', FieldIndex: -1})
 			}
 			for k := 0; k < size; k++ {
-				buff = append(buff, '|', byte(i+'A'))
+				buff = append(buff, MemCell{
+					Marker:     fieldMarker(i),
+					FieldIndex: i,
+				})
 			}
-		}
-		if len(buff)%8 != 0 {
-			buff = append(buff, '|')
 		}
 
 		// print
@@ -77,7 +81,11 @@ func PrintStructAlignment(q interface{}) {
 
 }
 
-func PrintStructInfo(itemList []FieldInfo){
+func fieldMarker(idx int) byte {
+	return byte('A' + idx%26)
+}
+
+func PrintStructInfo(itemList []FieldInfo) {
 	fmt.Println("---- Fields in struct ----")
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
@@ -85,24 +93,32 @@ func PrintStructInfo(itemList []FieldInfo){
 	table.SetHeader([]string{"ID", "FieldType", "FieldName", "FieldSize"})
 
 	for _, item := range itemList {
-		table.Append([]string{item.StrID,item.FieldType.String(),
+		table.Append([]string{item.StrID, item.FieldType.String(),
 			item.FieldName, strconv.Itoa(item.FieldSize)})
 	}
 	table.Render() // Send output
 }
 
-func ColorFormatPrint(buff []byte) {
+func ColorFormatPrint(buff []MemCell) {
 	fmt.Println("---- Memory layout ----")
 	for i := 0; i < len(buff); i++ {
-		if buff[i] >= 'A' && buff[i] <= 'Z' {
-			idx := int(buff[i]-'A') % len(colorList)
-			fmt.Printf(colorList[idx](string(buff[i])))
+		fmt.Printf("|")
+		if buff[i].FieldIndex >= 0 {
+			idx := buff[i].FieldIndex % len(colorList)
+			fmt.Printf(colorList[idx](string(buff[i].Marker)))
 		} else {
-			fmt.Printf(string(buff[i]))
+			fmt.Printf(string(buff[i].Marker))
 		}
-		if (i+1)%16 == 0 {
+		if (i+1)%8 == 0 {
 			fmt.Println("|")
 		}
 	}
-	fmt.Printf("\ntotal cost: %v Bytes.\n", len(buff)/2)
+	if len(buff)%8 != 0 {
+		remaining := 8 - len(buff)%8
+		for i := 0; i < remaining; i++ {
+			fmt.Printf("| ")
+		}
+		fmt.Println("|")
+	}
+	fmt.Printf("total cost: %v Bytes.\n", len(buff))
 }
