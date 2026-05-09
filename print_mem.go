@@ -2,15 +2,16 @@ package memalign
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/olekukonko/tablewriter"
 	"os"
 	"reflect"
 	"strconv"
+	
+	"github.com/fatih/color"
+	"github.com/olekukonko/tablewriter"
 )
 
 type FieldInfo struct {
-	StrID string
+	StrID     string
 	FieldType reflect.Type
 	FieldName string
 	FieldSize int
@@ -38,14 +39,11 @@ func init() {
 
 }
 
-
-
 func PrintStructAlignment(q interface{}) {
 	buff := make([]MemCell, 0)
 	if reflect.ValueOf(q).Kind() == reflect.Struct {
 		typeInfo := reflect.TypeOf(q)
 		fieldInfoList := make([]FieldInfo, typeInfo.NumField())
-
 
 		for i := 0; i < typeInfo.NumField(); i++ {
 			fieldInfoList[i].StrID = string(fieldMarker(i))

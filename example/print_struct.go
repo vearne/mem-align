@@ -1,16 +1,18 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/vearne/mem-align"
 )
 
 type Car struct {
-	flag bool
-	age  int32
-	F1   int8
-	F2   int64
-	F3   *int32
-	InnerStruct struct{
+	flag        bool
+	age         int32
+	F1          int8
+	F2          int64
+	F3          *int32
+	InnerStruct struct {
 		InnerByte byte
 		//InnerStr string
 	}
@@ -54,6 +56,9 @@ type ManyFields struct {
 }
 
 func main() {
-	memalign.PrintStructAlignment(ManyFields{})
+	fmt.Println("1) --- complex struct ---")
 	memalign.PrintStructAlignment(Car{})
+	fmt.Printf("\n\n")
+	fmt.Println("2) --- many fields in struct ---")
+	memalign.PrintStructAlignment(ManyFields{})
 }
